@@ -1,0 +1,126 @@
+<% content_for :title do %>
+  List Organization
+<% end %>
+<div class="row mt-3 mb-5">
+   <div class="col-10">
+      <h4>Organization List</h4>
+   </div>
+   <div class="col">
+      <% if (Current.user.role != 'Admin' && Current.user.role != nil) %>
+      <a href="<%= url_for(:root)+'organization/new' %>"><button type="button" class="btn btn-primary">
+            Create
+      </button></a>
+      <% end %>
+   </div>
+</div>
+<div class="row mt-1">
+   <div class="col-sm-4">
+      <input type="text" class="form-control" id="cari" name="cari">
+   </div>
+   <div class="col">
+      <button type="button" onclick="cari()" class="btn btn-primary mb-3">Cari</button>
+   </div>
+</div>
+<div class="row mt-1">
+      <input type="hidden" id="url" value="<%= url_for(:root)+'organization' %>">
+      <table id="table-org" class="table">
+         <thead>
+            <tr>
+               <th class="text-center">Name</th>
+               <th class="text-center">Email</th>
+               <th class="text-center">Phone</th>
+               <th class="text-center">Website</th>
+               <th class="text-center">Action</th>
+            </tr>
+         </thead>
+         <tbody>
+         <% @organizations.each do |org| %>
+            <tr>
+               <td><%= org.name %></td>
+               <td><%= org.email %></td>
+               <td><%= org.telp %></td>
+               <td><%= org.website %></td>
+               <td class="text-center text-nowrap">
+                  <button type="button" class="btn btn-success" onclick="lihatDetail(<%= org.id %>)">Detail</button>
+                  <% if (Current.user.role != nil && ((Current.user.role == 'Account Manager' && Current.user.id == org.fk_accountmanager_id) || Current.user.role == 'Super Admin'))  %>
+                  <button type="button" class="btn btn-warning" onclick="edit(<%= org.id %>)">Edit</button>
+                  <button type="button" class="btn btn-danger" onclick="hapus(<%= org.id %>)">Hapus</button>
+                  <% end %>
+               </td>
+            </tr>
+         <% end %>
+         </tbody>
+      </table>
+      
+   </div>
+   <div class="modal fade" id="modal_hapus" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Hapus Data</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+          <div class="modal-body">
+              <p>Apa anda yakin ingin menghapus data ini?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" onclick="konfirmHapus()" class="btn btn-primary">Ya</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+          </div>        
+        </div>
+      </div>
+    </div>
+
+<script>
+      function cari(){
+         let baseUrl = $('#url').val();
+         let cari = $('#cari').val();
+         window.location.href = baseUrl+"?q="+cari
+      }
+      function lihatDetail(id){
+         let baseUrl = $('#url').val();
+         window.location.href = baseUrl+"/"+id
+      }
+      function edit(id){
+         let baseUrl = $('#url').val();
+         window.location.href = baseUrl+"/"+id+"/edit"
+      }
+      let hapusId = null
+      function hapus(id){
+         hapusId = id
+         $('#modal_hapus').modal('show')
+      }
+      function konfirmHapus(){
+         $('#modal_hapus').modal('hide')
+         let baseUrl = $('#url').val();
+         $('#loading').modal('show')
+         $.ajax({
+            url: baseUrl+"/"+hapusId,
+            type: "DELETE",
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: (response) => {
+               setTimeout(() => {
+                  $('#loading').modal('hide')
+                  if(response.status == 'S'){
+                     $('#popup_title').text('Sukses') 
+                     location.reload()  
+                  } else {
+                     $('#popup_title').text('Gagal')
+                  }
+                  $('#popup_body').text(response.message)
+                  $('#popup_info').modal('show')
+            }, 300);
+            },
+            error: (xhr, txtStatus, errThrown) => {
+               setTimeout(() => {
+                  $('#loading').modal('hide')
+                  $('#popup_title').text('Error')
+                  $('#popup_body').text('Gagal simpan data organization')
+                  $('#popup_info').modal('show')
+               }, 300);
+            }
+         })
+      }
+</script>

@@ -1,0 +1,191 @@
+<% content_for :title do %>
+  Edit User
+<% end %>
+<div class="row justify-content-md-center">
+<div class="col-8 ">
+   <div class="row mt-3">
+      <div class="col-10">
+         <h4>User Edit Form</h4>
+      </div>
+   </div>
+   <div class="row mt-3">
+      <form id="form-org">
+         <div class="mb-3 row">
+            <input type="hidden" id="url" value="<%= url_for(:root)+'user' %>"/>
+            <label for="name" class="col-sm-2 col-form-label">Name</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" id="name" name="user[name]" value="<%= @user.name %>">
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="email" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" id="email" name="user[email]" value="<%= @user.email %>">
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="password" class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm-10">
+            <input type="password" class="form-control" id="password" name="password" >
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="password" class="col-sm-2 col-form-label">Role</label>
+            <div class="col-sm-10">
+             <select class="form-select" id="role" name="role" autocomplete="off">
+               <option value="Super Admin" <%= @user.role == 'Super Admin' ? 'selected' : '' %>>Super Admin</option>
+               <option value="Admin" <%= @user.role == 'Admin' ? 'selected' : '' %>>Admin</option>
+               <option value="Account Manager" <%= @user.role == 'Account Manager' ? 'selected' : '' %>>Account Manager</option>
+            </select>
+            </div>
+         </div>
+         <div class="mb-3 row" id="div-org">
+            <label for="organization_name" class="col-sm-10 col-form-label">Assign Organization</label>
+            <div class="col">
+               <button type="button" onclick="showOrg()" class="btn btn-primary mb-3">Tambah</button>
+             </div>
+             <div class="offset-sm-2 col-sm-8">
+               <table id="table-assign-org" class="table" width="100%">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Organization</th>
+                        <th class="text-center">Action</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                  <% @user.organization.each do |org| %>
+                     <tr id="<%= 'org_'+org.id.to_s %>">
+                        <td><%= org.name %></td>
+                        <td class="text-center"><button type="button" onclick="hapusOrg(<%= org.id %>)" class="btn btn-danger">Hapus</button></td>
+                        <input type="hidden" name="organization_id[]" value="<%= org.id %>">
+                     </tr>
+                  <% end %>
+                  </tbody>
+                 </table>
+             </div>
+         </div>         
+         <div class="mb-3 row justify-content-md-center">
+            <input type="hidden" id="id" value="<%= @user.id %>">
+            <button type="button" onclick="update()" class="col-4 btn btn-warning">Edit</button>
+         </div>
+         
+      </form>
+   </div>
+</div>
+</div>
+<div class="modal fade" id="modal_org" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+   <div class="modal-dialog modal-lg">
+     <div class="modal-content">
+       <div class="modal-header">
+           <h5 class="modal-title">Organization List</h5>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+       <div class="modal-body">
+           <table id="table-org" width="100%">
+            <thead>
+               <tr>
+                  <th class="text-center">Name</th>
+                  <th class="text-center">Email</th>
+                  <th class="text-center">Phone</th>
+                  <th class="text-center">Website</th>
+                  <th class="text-center">Action</th>
+               </tr>
+            </thead>
+            <tbody>
+            <% @organizations.each do |org| %>
+               <tr>
+                  <td><%= org.name %></td>
+                  <td><%= org.email %></td>
+                  <td><%= org.telp %></td>
+                  <td><%= org.website %></td>
+                  <td class="text-center text-nowrap">
+                     <button type="button" class="btn btn-success" onclick="pilihOrg(<%= org.id %>,'<%= org.name %>')">Pilih</button>
+                  </td>
+               </tr>
+            <% end %>
+            </tbody>
+           </table>
+       </div>
+       <div class="modal-footer">
+           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       </div>        
+     </div>
+   </div>
+ </div>
+<script>
+$(document).ready(function() {
+      if($('#role').val() != 'Account Manager'){
+            $('#div-org').hide(500)
+         } else {
+            $('#div-org').show(500)
+         }
+      $('#role').on('change', function(){
+         if($(this).val() != 'Account Manager'){
+            $('#div-org').hide(500)
+         } else {
+            $('#div-org').show(500)
+         }
+      })
+    })
+ function showOrg(){
+      $('#modal_org').modal('show')
+   }
+   function pilihOrg(id, orgName){
+      let row = '<tr id="org_'+id+'">'+
+         '<td>'+orgName+'</td>'+
+         '<td class="text-center"><button type="button" onclick="hapusOrg('+id+')" class="btn btn-danger">Hapus</button></td>'+
+         '<input type="hidden" name="organization_id[]" value="'+id+'">'+
+         '</tr>';
+      $('#table-assign-org').append(row);
+      $('#modal_org').modal('hide')
+   }
+   function hapusOrg(id){
+      $('#org_'+id).remove()
+   }
+   function update(){
+      $('#loading').modal('show')
+      let baseUrl = $('#url').val()
+      let idOrg = $('#id').val()
+      let formData = new FormData()
+      formData.append('user[id]', parseInt(idOrg))
+      formData.append('user[name]', $('#name').val())
+      formData.append('user[email]', $('#email').val())
+      if($('#password').val() != '')
+         formData.append('user[password]', $('#password').val())
+      formData.append('user[role]', $('#role option:selected').val())
+      let elOrgArr = $('input[name^="organization_id"]')
+      elOrgArr.each((i,val)=>{
+         formData.append('user[organization_id][]', parseInt($('input[name^="organization_id"]')[i].value))
+      })
+      console.log(formData)
+      $.ajax({
+         url: baseUrl+"/"+idOrg,
+         type: "PATCH",
+         processData: false,
+         contentType: false,
+         data: formData,
+         dataType: 'json',
+         success: (response) => {
+            setTimeout(() => {
+               $('#loading').modal('hide')
+               if(response.status == 'S'){
+                  $('#popup_title').text('Sukses')   
+               } else {
+                  $('#popup_title').text('Gagal')
+               }
+               $('#popup_body').text(response.message)
+               $('#popup_info').modal('show')
+               
+            }, 300);
+         },
+         error: (xhr, txtStatus, errThrown) => {
+            setTimeout(() => {
+               $('#loading').modal('hide')
+               $('#popup_title').text('Error')
+               $('#popup_body').text('Gagal simpan data user')
+               $('#popup_info').modal('show')
+            }, 300);
+         }
+      })
+   }
+</script>

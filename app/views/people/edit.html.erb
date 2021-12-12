@@ -1,0 +1,156 @@
+<% content_for :title do %>
+  Edit Person
+<% end %>
+<div class="row justify-content-md-center">
+<div class="col-8 ">
+   <div class="row mt-3">
+      <div class="col-10">
+         <h4>Person Edit Form</h4>
+      </div>
+   </div>
+   <div class="row mt-3">
+      <form id="form-org">
+         <div class="mb-3 row">
+            <input type="hidden" id="url" value="<%= url_for(:root)+'people' %>"/>
+            <label for="name" class="col-sm-2 col-form-label">Name</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" id="name" name="people[name]" value="<%= @people.name %>">
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="email" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" id="email" name="people[email]" value="<%= @people.email %>">
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="phone" class="col-sm-2 col-form-label">Phone</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" id="phone" name="people[phone]" value="<%= @people.phone %>">
+            </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="website" class="col-sm-2 col-form-label">Organization</label>
+            <div class="col-sm-8">
+               <input type="text" readonly class="form-control" id="organization_name" name="organization_name" value="<%= @people.organization.name %>">
+               <input type="hidden" class="form-control" id="organization_id" name="organization_id">
+            </div>
+            <div class="col">
+               <button type="button" onclick="showOrg()" class="btn btn-primary mb-3">Cari</button>
+             </div>
+         </div>
+         <div class="mb-3 row">
+            <label for="logo" class="col-sm-2 col-form-label">Avatar</label>
+            <div class="col-sm-10">
+               <input class="form-control" type="file" accept="image/png, image/gif, image/jpeg" id="avatar" name="people[avatar]">
+            </div>
+         </div>
+          
+         <div class="mb-3 row">
+            <div class="col-sm-6 offset-sm-2">
+            <img src="<%= url_for(@people.avatar) %>" id="logo" width="100">
+            </div>
+         </div>
+         
+         
+         <div class="mb-3 row justify-content-md-center">
+            <input type="hidden" id="id" value="<%= @people.id %>">
+            <button type="button" onclick="update()" class="col-4 btn btn-warning">Edit</button>
+         </div>
+         
+      </form>
+   </div>
+</div>
+</div>
+<div class="modal fade" id="modal_org" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+   <div class="modal-dialog modal-lg">
+     <div class="modal-content">
+       <div class="modal-header">
+           <h5 class="modal-title">Organization List</h5>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+       <div class="modal-body">
+           <table id="table-org" class="table" width="100%">
+            <thead>
+               <tr>
+                  <th class="text-center">Name</th>
+                  <th class="text-center">Email</th>
+                  <th class="text-center">Phone</th>
+                  <th class="text-center">Website</th>
+                  <th class="text-center">Action</th>
+               </tr>
+            </thead>
+            <tbody>
+         <% @organizations.each do |org| %>
+            <tr>
+               <td><%= org.name %></td>
+               <td><%= org.email %></td>
+               <td><%= org.telp %></td>
+               <td><%= org.website %></td>
+               <td class="text-center text-nowrap">
+                  <button type="button" class="btn btn-success" onclick="pilihOrg(<%= org.id %>,'<%= org.name %>')">Pilih</button>
+               </td>
+            </tr>
+         <% end %>
+         </tbody>
+           </table>
+       </div>
+       <div class="modal-footer">
+           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       </div>        
+     </div>
+   </div>
+ </div>
+<script>
+ function showOrg(){
+      $('#modal_org').modal('show')
+   }
+   function pilihOrg(id, orgName){
+      $('#organization_name').val(orgName)
+      $('#organization_id').val(id)
+      $('#modal_org').modal('hide')
+   }
+   function update(){
+      $('#loading').modal('show')
+      let baseUrl = $('#url').val()
+      let idOrg = $('#id').val()
+      let formData = new FormData()
+      formData.append('people[id]', parseInt(idOrg))
+      formData.append('people[name]', $('#name').val())
+      formData.append('people[email]', $('#email').val())
+      formData.append('people[phone]', $('#phone').val())
+      formData.append('people[fk_organization_id]', $('#organization_id').val())
+      if($('#avatar')[0].files.length > 0)
+         formData.append('people[avatar]', $('#avatar')[0].files[0])
+      console.log(formData)
+      $.ajax({
+         url: baseUrl+"/"+idOrg,
+         type: "PATCH",
+         processData: false,
+         contentType: false,
+         data: formData,
+         dataType: 'json',
+         success: (response) => {
+            setTimeout(() => {
+               $('#loading').modal('hide')
+               if(response.status == 'S'){
+                  $('#popup_title').text('Sukses')   
+               } else {
+                  $('#popup_title').text('Gagal')
+               }
+               $('#popup_body').text(response.message)
+               $('#popup_info').modal('show')
+               
+            }, 300);
+         },
+         error: (xhr, txtStatus, errThrown) => {
+            setTimeout(() => {
+               $('#loading').modal('hide')
+               $('#popup_title').text('Error')
+               $('#popup_body').text('Gagal simpan data people')
+               $('#popup_info').modal('show')
+            }, 300);
+         }
+      })
+   }
+</script>

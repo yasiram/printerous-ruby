@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= render 'layouts/include/head' %>
+  </head>
+  <body>
+    <header>
+      <%= render 'layouts/include/header' %>
+    </header>
+    <div class="container">
+      <input type="hidden" id="role_user" value="<%= Current.user.role %>">
+      <p class="notice"><%= notice %></p>
+      <p class="alert"><%= alert %></p>
+      <%= yield %>
+    </div>
+    <footer>
+      <%= render 'layouts/include/footer' %>
+    </footer>
+  </body>
+</html>

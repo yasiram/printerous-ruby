@@ -1,0 +1,35 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Printerous</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="<%= url_for(:root)+'organization' %>">Organization</a>
+          </li>
+          <% if (Current.user.role != 'Admin' && Current.user.role != nil) %>
+          <li class="nav-item">
+            <a class="nav-link" href="<%= url_for(:root)+'people' %>">Person</a>
+          </li>
+          <% end %>
+          <% if (Current.user.role != 'Account Manager' && Current.user.role != nil) %>
+          <li class="nav-item">
+            <a class="nav-link" href="<%= url_for(:root)+'user' %>">User</a>
+          </li>
+          <% end %>
+        </ul>
+      </div>
+      <div class="d-flex">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                <%= Current.user.name %><%= Current.user.role ? ' - '+Current.user.role : ''%>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li><a class="dropdown-item" href="<%= url_for(:root)+'logout' %>">Logout</a></li>
+            </ul>
+          </div>
+      </div>
+    </div>
+  </nav>
